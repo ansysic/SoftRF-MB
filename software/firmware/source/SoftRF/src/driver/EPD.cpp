@@ -138,41 +138,41 @@ bool EPD_setup(bool splash_screen)
 
   if (hw_info.model == SOFTRF_MODEL_BADGE) {
 
-    x = (display->width()  - tbw1) / 2;
-    y = (display->height() + tbh1) / 2 - tbh3;
-    display->setCursor(x, y);
-    display->print(EPD_SoftRF_text1);
-
-    display->setFont(&FreeMono18pt7b);
-    display->getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
-
-    x = (display->width()  - tbw2) / 2;
-    y = (display->height() + tbh2) / 2;
-    display->setCursor(x, y);
-    display->print(EPD_SoftRF_text2);
-
-    display->setFont(&FreeMonoBold24pt7b);
-
-    x = (display->width()  - tbw3) / 2;
-    y = (display->height() + tbh3) / 2 + tbh3;
-    display->setCursor(x, y);
-    display->print(EPD_SoftRF_text3);
-
+    // First print version strings, then get height of it and align rest of boot logos around it
+    // More centered look on the screen
     char buf[32];
-//    snprintf(buf, sizeof(buf), "HW: %s SW: %s", hw_info.revision > 2 ?
-//                  Hardware_Rev[3] : Hardware_Rev[hw_info.revision],
-//                  SOFTRF_FIRMWARE_VERSION);
     snprintf(buf, sizeof(buf), "HW:%d SW:%s",
                   hw_info.revision,
                   SOFTRF_FIRMWARE_VERSION);
 
-//    display->setFont(&Org_01); 
     display->setFont(&FreeMonoBold9pt7b);
     display->getTextBounds(buf, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
     x = (display->width() - tbw4) / 2;
-    y = display->height() - tbh4;
+    y = display->height() - 1;
     display->setCursor(x, y);
     display->print(buf);
+  
+    // "SoftRF"
+    display->setFont(&FreeMonoBold24pt7b);
+    x = (display->width()  - tbw1) / 2;
+    y = (display->height() - tbh4 + tbh1) / 2 - tbh3;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text1);
+
+    // "and"
+    display->setFont(&FreeMono18pt7b);
+    display->getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+    x = (display->width()  - tbw2) / 2;
+    y = (display->height() - tbh4 + tbh2) / 2;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text2);
+
+    // "LilyGO"
+    display->setFont(&FreeMonoBold24pt7b);
+    x = (display->width()  - tbw3) / 2;
+    y = (display->height() - tbh4 + tbh3) / 2 + tbh3;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text3);
 
   } else {
     x = (display->width()  - tbw1) / 2;
@@ -181,7 +181,7 @@ bool EPD_setup(bool splash_screen)
     display->print(EPD_SoftRF_text1);
   }
 
-  // first update should be full refresh
+  // do full refresh - first update should be full refresh
   display->display(false);
 
   EPD_POWEROFF;
