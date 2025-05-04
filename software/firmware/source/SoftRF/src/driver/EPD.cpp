@@ -55,6 +55,10 @@ const char EPD_Flash_text[]   = "FLASH   ";
 const char EPD_Baro_text[]    = "BARO    ";
 const char EPD_IMU_text[]     = "IMU     ";
 
+const char EPD_RSTBTN_text[]  = "< Reset";
+const char EPD_PWRBTN_text[]  = "< Power/Next";
+
+
 const char *Aircraft_Type[] = {
   [AIRCRAFT_TYPE_UNKNOWN]    = "Unkwn",
   [AIRCRAFT_TYPE_GLIDER]     = "Glider",
@@ -553,10 +557,11 @@ void EPD_fini(int reason, bool screen_saver)
   uint16_t tbw, tbh;
   uint16_t x, y;
 
-  SoC->ADB_ops && SoC->ADB_ops->fini();
+  // --- Initial Cleanup ---
+  SoC->ADB_ops && SoC->ADB_ops->fini(); // Finalize ADB operations if available
 
-  const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT ?
-                     "LOW BATTERY" : "NORMAL OFF");
+  // Determine the primary message based on the shutdown reason
+  const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT ? "LOW BAT" : "OFF");
 
   switch (hw_info.display)
   {
@@ -608,38 +613,39 @@ void EPD_fini(int reason, bool screen_saver)
 
       display->fillScreen(GxEPD_WHITE);
 
-    } else {
+        // Note: The actual physical update for this final blank screen happens
+        // in the common update section below.
 
-      display->fillScreen(GxEPD_WHITE);
+      }
+      // --- Normal Shutdown Path ---
+      else {
+        // --- Modify Display Buffer (Normal Shutdown Screen) ---
+        display->fillScreen(GxEPD_WHITE); // Clear buffer to white
 
-      display->setFont(&FreeMonoBold12pt7b);
-      display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
-      y = tbh + tbh / 2;
-      display->setCursor(x, y);
-      display->print(msg);
+        // Display shutdown reason message, centered
+        display->setFont(&FreeMonoBold24pt7b);
+        display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = (display->width() - tbw) / 2;
+        y = (display->height() + tbh) / 2;
+        display->setCursor(x, y);
+        display->print(msg); // Draw reason to buffer
 
-      x = (display->width()  - 128) / 2;
-      y = (display->height() - 128) / 2 - tbh / 2;
-      display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+        // Display button helper text for reset and power button
+        display->setFont(&FreeMonoBold12pt7b);
+        display->getTextBounds(EPD_RSTBTN_text, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = 1;
+        y = tbh + tbh / 2;
+        display->setCursor(x, y);
+        display->print(EPD_RSTBTN_text); // Draw reset button text
 
-      display->setFont(&Org_01);
-      display->getTextBounds(EPD_SoftRF_text4, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x =  5;
-      y += 128 + 17;
-      display->setCursor(x, y);
-      display->print(EPD_SoftRF_text4);
-
-      display->setFont(&FreeMonoBoldOblique9pt7b);
-      display->print(EPD_SoftRF_text5);
-
-      display->setFont(&FreeSerif9pt7b);
-      display->getTextBounds(EPD_SoftRF_text6, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
-      y += 21;
-      display->setCursor(x, y);
-      display->print(EPD_SoftRF_text6);
-    }
+        // Display power button text
+        display->setFont(&FreeMonoBold12pt7b);
+        display->getTextBounds(EPD_PWRBTN_text, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = 1;
+        y = (display->height() - tbh / 2);
+        display->setCursor(x, y);
+        display->print(EPD_PWRBTN_text); // Draw power button text
+      }
 
 #if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
