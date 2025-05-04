@@ -26,6 +26,7 @@
 #if defined(USE_EPAPER)
 
 #include "../driver/EPD.h"
+#include "../driver/Battery.h"
 
 #include <TimeLib.h>
 
@@ -41,8 +42,10 @@
 #include <FreeMonoBold9pt7b.h>
 #include <FreeMonoBold12pt7b.h>
 #include <Picopixel.h>
+#include "U8g2_for_Adafruit_GFX.h"
 
 static int EPD_zoom = ZOOM_MEDIUM;
+extern U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 
 enum {
    STATE_RVIEW_NONE,
@@ -119,6 +122,13 @@ static void EPD_Draw_Radar()
     }
 
     display->fillScreen(GxEPD_WHITE);
+
+    // BATT ICON
+    u8g2Fonts.setCursor(display->width() -24 - 5, 5);
+    uint8_t pct = Battery_charge();
+    uint8_t bars = pct / 20;
+    if (bars > 4) bars = 4;
+    u8g2Fonts.write('0' + bars);
 
     {
       for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
@@ -347,6 +357,11 @@ static void EPD_Draw_Radar()
 void EPD_radar_setup()
 {
   EPD_zoom = ui->zoom;
+  
+  u8g2Fonts.setFontDirection(1);
+  u8g2Fonts.setForegroundColor(GxEPD_BLACK);
+  u8g2Fonts.setBackgroundColor(GxEPD_WHITE);
+  u8g2Fonts.setFont(u8g2_font_battery24_tr);
 }
 
 void EPD_radar_loop()
