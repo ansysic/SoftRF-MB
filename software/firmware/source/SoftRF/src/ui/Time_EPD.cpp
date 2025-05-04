@@ -53,10 +53,10 @@ static const uint8_t bt_icon[] = {
 void EPD_time_setup()
 {
   u8g2Fonts.begin(*display); // connect u8g2 procedures to Adafruit GFX
-  u8g2Fonts.setFontDirection(3);
+  u8g2Fonts.setFontDirection(1);
   u8g2Fonts.setForegroundColor(GxEPD_BLACK);
   u8g2Fonts.setBackgroundColor(GxEPD_WHITE);
-  u8g2Fonts.setFont(u8g2_font_battery19_tn);
+  u8g2Fonts.setFont(u8g2_font_battery24_tr);
 }
 
 void EPD_time_loop()
@@ -97,30 +97,35 @@ void EPD_time_loop()
 
 #endif /* ARDUINO_ARCH_NRF52 */
 
-    display->fillScreen(GxEPD_WHITE);
 
+    // "UTC"
+    display->fillScreen(GxEPD_WHITE);
     display->setFont(&FreeMonoBold12pt7b);
     display->getTextBounds(TZ_text, 0, 0, &tbx, &tby, &tbw, &tbh);
-
     display->setCursor((display->width() - tbw) / 2, tbh + tbh / 2);
     display->print(TZ_text);
 
+    // BT ICON
     if (ble_has_client) {
-      display->drawBitmap(display->width() - 48, 3, bt_icon, 16, 16, GxEPD_BLACK);
+      display->drawBitmap(display->width() - 50, 6, bt_icon, 16, 16, GxEPD_BLACK);
     }
 
-    u8g2Fonts.setCursor(display->width() - 5, 15);
-    u8g2Fonts.print((Battery_charge() + 19) / 20);
+    // BATT ICON
+    u8g2Fonts.setCursor(display->width() -24 - 5, 5);
+    uint8_t pct = Battery_charge();
+    uint8_t bars = pct / 20;
+    if (bars > 4) bars = 4;
+    u8g2Fonts.write('0' + bars);
 
+    // "hh:mm"
     display->setFont(&FreeMonoBold24pt7b);
     display->getTextBounds(buf_hm, 0, 0, &tbx, &tby, &tbw, &tbh);
-
     display->setCursor((display->width() - tbw) / 2, display->height() / 2 - 10);
     display->print(buf_hm);
 
+    // "ss"
     display->setFont(&FreeMono18pt7b);
     display->getTextBounds(buf_sec, 0, 0, &tbx, &tby, &tbw, &tbh);
-
     display->setCursor((display->width() - tbw) / 2, display->height() / 2 + tbh + tbh - 20);
     display->print(buf_sec);
 
