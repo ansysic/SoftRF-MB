@@ -33,8 +33,8 @@
 #include <FreeMonoBold24pt7b.h>
 #include <FreeMonoBold18pt7b.h>
 #include <FreeMonoBold12pt7b.h>
-#include <FreeMonoBold9pt7b.h>
 #include <FreeMono18pt7b.h>
+#include <FreeMono12pt7b.h>
 
 #include <Org_01.h>
 #include <FreeMonoBoldOblique9pt7b.h>
@@ -55,8 +55,8 @@ const char EPD_Flash_text[]   = "FLASH   ";
 const char EPD_Baro_text[]    = "BARO    ";
 const char EPD_IMU_text[]     = "IMU     ";
 
-const char EPD_RSTBTN_text[]  = "< Reset";
-const char EPD_PWRBTN_text[]  = "< Power/Next";
+const char EPD_RSTBTN_text[]  = "Reset";
+const char EPD_PWRBTN_text[]  = "Power/Next";
 
 
 const char *Aircraft_Type[] = {
@@ -145,10 +145,10 @@ bool EPD_setup(bool splash_screen)
                   hw_info.revision,
                   SOFTRF_FIRMWARE_VERSION);
 
-    display->setFont(&FreeMonoBold9pt7b);
+    display->setFont(&FreeMono12pt7b);
     display->getTextBounds(buf, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
     x = (display->width() - tbw4) / 2;
-    y = display->height() - 1;
+    y = display->height() - 5;
     display->setCursor(x, y);
     display->print(buf);
   
@@ -631,7 +631,7 @@ void EPD_fini(int reason, bool screen_saver)
         display->print(msg); // Draw reason to buffer
 
         // Display button helper text for reset and power button
-        display->setFont(&FreeMonoBold12pt7b);
+        display->setFont(&FreeMono12pt7b);
         display->getTextBounds(EPD_RSTBTN_text, 0, 0, &tbx, &tby, &tbw, &tbh);
         x = 1;
         y = tbh + tbh / 2;
@@ -639,7 +639,7 @@ void EPD_fini(int reason, bool screen_saver)
         display->print(EPD_RSTBTN_text); // Draw reset button text
 
         // Display power button text
-        display->setFont(&FreeMonoBold12pt7b);
+        display->setFont(&FreeMono12pt7b);
         display->getTextBounds(EPD_PWRBTN_text, 0, 0, &tbx, &tby, &tbw, &tbh);
         x = 1;
         y = (display->height() - tbh / 2);
