@@ -24,6 +24,7 @@
 
 #include "../driver/EPD.h"
 #include "../driver/Battery.h"
+#include "BatteryIcon.h"
 #include "../TrafficHelper.h"
 
 #if defined(ARDUINO_ARCH_NRF52)
@@ -53,10 +54,7 @@ static const uint8_t bt_icon[] = {
 void EPD_time_setup()
 {
   u8g2Fonts.begin(*display); // connect u8g2 procedures to Adafruit GFX
-  u8g2Fonts.setFontDirection(1);
-  u8g2Fonts.setForegroundColor(GxEPD_BLACK);
-  u8g2Fonts.setBackgroundColor(GxEPD_WHITE);
-  u8g2Fonts.setFont(u8g2_font_battery24_tr);
+  BatteryIcon_setup(u8g2Fonts);
 }
 
 void EPD_time_loop()
@@ -111,11 +109,7 @@ void EPD_time_loop()
     }
 
     // BATT ICON
-    u8g2Fonts.setCursor(display->width() -24 - 5, 5);
-    uint8_t pct = Battery_charge();
-    uint8_t bars = pct / 20;
-    if (bars > 4) bars = 4;
-    u8g2Fonts.write('0' + bars);
+    drawBatteryIcon(u8g2Fonts, display->width() -24 - 5, 5);
 
     // "hh:mm"
     display->setFont(&FreeMonoBold24pt7b);

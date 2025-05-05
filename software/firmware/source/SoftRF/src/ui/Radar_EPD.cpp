@@ -27,6 +27,7 @@
 
 #include "../driver/EPD.h"
 #include "../driver/Battery.h"
+#include "BatteryIcon.h"
 
 #include <TimeLib.h>
 
@@ -124,11 +125,7 @@ static void EPD_Draw_Radar()
     display->fillScreen(GxEPD_WHITE);
 
     // BATT ICON
-    u8g2Fonts.setCursor(display->width() -24 - 5, 5);
-    uint8_t pct = Battery_charge();
-    uint8_t bars = pct / 20;
-    if (bars > 4) bars = 4;
-    u8g2Fonts.write('0' + bars);
+    drawBatteryIcon(u8g2Fonts, display->width() -24 - 5, 5);
 
     {
       for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
@@ -358,10 +355,7 @@ void EPD_radar_setup()
 {
   EPD_zoom = ui->zoom;
   
-  u8g2Fonts.setFontDirection(1);
-  u8g2Fonts.setForegroundColor(GxEPD_BLACK);
-  u8g2Fonts.setBackgroundColor(GxEPD_WHITE);
-  u8g2Fonts.setFont(u8g2_font_battery24_tr);
+  BatteryIcon_setup(u8g2Fonts);
 }
 
 void EPD_radar_loop()
