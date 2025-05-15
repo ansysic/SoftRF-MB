@@ -1284,7 +1284,7 @@ void NMEA_Export()
 
         cip = &Container[i];
 
-        if (cip->addr && ((OurTime - cip->timestamp) <= EXPORT_EXPIRATION_TIME)) {
+        if (cip->addr && ((OurTime - cip->timestamp) <= settings->expire)) {
 #if 0
           Serial.println(i);
           Serial.printf("%06X\r\n", cip->addr);
@@ -1464,13 +1464,24 @@ void NMEA_Export()
          // data_source should be 1, 3, 4, 6 for ADS-B, ADS-R, TIS-B, Mode-S
          //   (GDL90 should probably be treated as ADS-B)
          // convert tx_type to the code used by FLARM:
-         int data_source = data_source_code[fop->tx_type];
 
          /*
           * When callsign is available - send it to a NMEA client.
           * If it is not - generate a callsign substitute,
           * based upon a protocol ID and the ICAO address
           */
+
+         int data_source = data_source_code[fop->tx_type];
+         const char *prefix;
+         if (fop->tx_type >= TX_TYPE_ADSB) {
+             prefix = NMEA_CallSign_Prefix[fop->protocol];
+         } else if (fop->tx_type == TX_TYPE_ADSR) {
+             prefix = "ADR";
+         } else if (fop->tx_type == TX_TYPE_TISB) {
+             prefix = "ADT";
+         } else {                         // Mode A,C,S
+             prefix = "MDS";
+         }
 
          if (settings->pflaa_cs == false) {         // skip the callsign
 
@@ -1488,7 +1499,7 @@ void NMEA_Export()
 // aircraft type is supposed to be hex:
               PSTR("$PFLAA,%d,%d,%s,%d,%d,%06X!%s_%06X,%s,,%s,%s,%X,%d,%d,%d" PFLAA_EXT1_FMT "*"),
               alarm_level, dy, str_dx,
-              alt_diff, addr_type, id, NMEA_CallSign_Prefix[fop->protocol], id,
+              alt_diff, addr_type, id, prefix, id,
               ltrim(str_course), ltrim(str_speed), ltrim(str_climb_rate), fop->aircraft_type,
               (fop->no_track? 1 : 0), data_source, fop->rssi  PFLAA_EXT1_ARGS );
 
@@ -1500,7 +1511,7 @@ void NMEA_Export()
            snprintf_P(NMEABuffer, sizeof(NMEABuffer),
               PSTR("$PFLAA,%d,%d,%s,%d,%d,%06X!%s_%s,%s,,%s,%s,%X,%d,%d,%d" PFLAA_EXT1_FMT "*"),
               alarm_level, dy, str_dx,
-              alt_diff, addr_type, id, NMEA_CallSign_Prefix[fop->protocol], fop->callsign,
+              alt_diff, addr_type, id, prefix, fop->callsign,
               ltrim(str_course), ltrim(str_speed), ltrim(str_climb_rate), fop->aircraft_type,
               (fop->no_track? 1 : 0), data_source, fop->rssi  PFLAA_EXT1_ARGS );
          }
